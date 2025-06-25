@@ -1,0 +1,310 @@
+* {margin:0; padding:2px;font-family: Tahoma, Arial, Verdana, sans-serif;font-size: 14px}
+#text {margin:50px auto; width:500px}
+.hotspot {color:#900; padding-bottom:1px; border-bottom:1px dotted #900; cursor:pointer}
+#tt {position:absolute; display:block; background:url(images/tt_left.gif) top left no-repeat}
+#tttop {display:block; height:5px; margin-left:5px; background:url(images/tt_top.gif) top right no-repeat; overflow:hidden}
+#ttcont {display:block; padding:2px 12px 3px 7px; margin-left:5px; background:#666; color:#FFF}
+#ttbot {display:block; height:5px; margin-left:5px; background:url(images/tt_bottom.gif) top right no-repeat; overflow:hidden}
+
+.news1 {
+         margin:5px; padding:5px; display:block; position: fixed; top:100px; 
+         right:10px; width:350px; 
+         height:200px; background: #E0FDFF;opacity: 0.5; border-radius:5px; }
+
+.news1:hover {margin:5px; padding:5px; display:block; position: fixed; top:100px; 
+         right:10px; width:350px; 
+         height:200px; background: #E0FDFF;opacity: 1; border-radius:5px; }
+
+
+H1 {
+  color: #000080;
+  font-size: 200%;
+  font-family: Arial, Verdana, sans-serif;
+  text-align: center;
+}
+
+hr { 
+     width:100%;
+     margin:1em auto;
+     border: none;
+     background:#5a4ba3;
+     height: 1px;
+    }
+
+a {
+  color: #3968ad;
+  font-size: 14px;
+  font-family: Tahoma, Arial, Verdana, sans-serif;
+  text-decoration:underline;
+  text-align: center;
+}
+
+a:hover {
+  color: #6887ba;
+  }
+
+.left_al {
+    float: left; /* Обтекание по правому краю */
+}
+.ri_al {
+    float: right; 
+}
+
+
+
+.layer1 {
+    float: left; /* Обтекание по правому краю */
+    padding: 10px; /* Поля вокруг текста */
+    width: 60%; /* Ширина блока */
+}
+
+.newpage{
+  page-break-after: always
+}
+.T18{
+  font-size: 18pt;
+  font-weight: bold;
+}
+
+.redtxt {
+  color: red;
+  font-size: 12pt;
+}
+
+.bkgred {
+  background-color: #f59c98;
+}
+
+.bkgyel {
+  background-color: #f2f18f;
+}
+
+.HighLightBorder {
+   border: 3px solid #3423eb;
+}
+
+.NormBorder {
+   border: 1px solid #e5e8e1;
+}
+
+
+.st1 {
+  background-color: #3366ff;
+  color: #ffff66;
+}
+
+.st2 {
+  background-color: #00cc66;
+  color: #ffffe6;
+}
+
+.st3 {
+  background-color: #ff9933;
+  color: #ffffe6;
+}
+
+.st4 {
+  background-color: #ff5050;
+  color: #ffffe6;
+}
+
+.st5 {
+  background-color: #c653c6;
+  color: #ffffe6;
+}
+
+.st6 {
+  background-color: #9933ff;
+  color: #ffffe6;
+}
+
+.st7 {
+  background-color: #00cccc;
+  color: #ffffe6;
+}
+
+
+
+input[type='number']{
+    width: 75px;
+} 
+
+input[type='number'].wide{
+    width: 137px;
+} 
+
+P {
+  padding-left: 10px;
+}
+
+li{
+  padding-left: 5px;
+}
+
+ul{
+  margin: 2px;
+  padding-left: 10px;
+}
+
+
+
+tr {  color: black;
+      font-size: 14px;
+      font-family: Tahoma, Arial, Verdana, sans-serif;
+          }
+
+
+table.LongTable tr:hover td{
+  background: #E0FDFF;
+}
+
+
+table.LongTable tr:hover td.yl{
+  background: #d7f573;
+}
+
+
+
+tr.total {
+  background: #E0FDFF;
+}
+
+table.fixed {
+  table-layout: fixed;
+}
+
+tr.ylb {
+  background: #ffff99;
+  text-align: center;
+  font-weight:bold;
+}
+
+td {  
+      color: black;
+      font-size: 14px;
+      font-family: Tahoma, Arial, Verdana, sans-serif;
+          }
+
+td.yl {
+  background: #ffff99
+}
+
+td.red {
+  background: #ffb8a6
+}
+
+tr.yl {
+  background: #ffff99
+}
+
+tr.blue {
+  background: #D2EBFA
+}
+tr.ylb {
+  background: #ffff99;
+  text-align: center;
+  font-weight:bold;
+}
+
+td.yl {
+  background: #ffff99
+}
+
+td.ylg {
+  background: #c1f2b8
+}
+
+
+td.ylred {
+  background: #c1f2b8;
+  color: #ff1100;
+  font-weight:bold
+}
+
+td.pink {
+  background: #ffcccc;
+}
+
+td.LBlue {
+  background: #b3ecff;
+}
+
+
+td.LGreen {
+  background: #bbf09c;
+}
+td.blue {
+  color: blue;
+}
+tr.yl {
+  background: #ffff99
+}
+
+tr.blue {
+  background: #D2EBFA
+}
+
+
+tr.req {
+  background: #FF9999;
+}
+
+
+
+tr.req {
+  background: #FF9999;
+}
+
+tr.even {
+      color: black;
+      font-size: 14px;
+      font-family: Tahoma, Arial, Verdana, sans-serif;
+      background: #f0f7f0;
+}
+
+tr.BlueRow {
+      color: black;
+      font-size: 14px;
+      font-family: Tahoma, Arial, Verdana, sans-serif;
+      background: #9ce0f7;
+}
+
+
+div.even {
+      color: black;
+      font-size: 14px;
+      font-family: Tahoma, Arial, Verdana, sans-serif;
+      background: #fcfcb8;
+}
+
+
+
+
+tr.header {
+  color: black;
+  font-size: 14px;
+  font-family: Tahoma, Arial, Verdana, sans-serif;
+  text-align: center;
+  background: #CCFF99;
+}
+
+a.tooltip {outline:none; }
+a.tooltip strong {line-height:30px;}
+a.tooltip:hover {text-decoration:none;} 
+a.tooltip span {
+    z-index:10;display:none; padding:14px 20px;
+    margin-top:-30px; margin-left:28px;
+    width:300px; line-height:16px;
+}
+a.tooltip:hover span{
+    display:inline; position:absolute; color:#111;
+    border:1px solid #DCA; background:#fffAF0;}
+.callout {z-index:20;position:absolute;top:35px;border:0;left:-14px;}
+    
+/*CSS3 extras*/
+a.tooltip span
+{
+    border-radius:4px;
+    box-shadow: 5px 5px 8px #CCC;
+}
+
