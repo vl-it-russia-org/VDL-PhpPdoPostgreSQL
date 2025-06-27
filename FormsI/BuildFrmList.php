@@ -177,8 +177,8 @@ while ($dp2 = $STH->fetch(PDO::FETCH_ASSOC)) {
 
 }
 
-echo ("<br>");
-print_r ($FromFldsConn);
+//echo ("<br>");
+//print_r ($FromFldsConn);
 
 
 //echo ("<br>");
@@ -236,23 +236,15 @@ fwrite($file,"session_start();\r\n");
 
 $S= 'include ("../setup/common_pg.php");
 BeginProc();
-'.
-'
-?>
-<html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-<meta http-equiv="Content-Language" content="ru">
-<link rel="stylesheet" type="text/css" href="../style.css">
-<link rel="icon" href="../favicon.ico" type="image/x-icon">
-<title>'.$TabName.' list</title></head>
-<body>
-<?php
+
+$TabName=\''.$TabName.'\';
+OutHtmlHeader ($TabName." list");
+
 include ("../js_SelAll.js");'.
 "\r\n";
 fwrite($file,$S);
 
-$S= '$TabName=\''.$TabName.'\';
+$S= '
 $CurrFile=\''.$TabName.'List.php\';
 $Frm=\''.$TabName.'\';'.
 "\r\n";
@@ -636,12 +628,8 @@ $S.=");\r\n".
    $enS.");\r\n".
 
 "CheckRight1 (\$pdo, 'Admin');\r\n\r\n ".
-  '$BegPos = addslashes ($_REQUEST[\'BegPos\']);'."\r\n".
-  'if ($BegPos==\'\'){'."\r\n".
-    '$BegPos=0;'."\r\n".
-  '}'."\r\n"."\r\n".
 
-  '$ORD = addslashes ($_REQUEST[\'ORD\']);'."\r\n".
+  '$ORD = $_REQUEST[\'ORD\'];'."\r\n".
   'if ($ORD ==\'1\') {'."\r\n".
     '$ORD = \''.$PKList.'\';
   }
@@ -653,20 +641,22 @@ $S.=");\r\n".
   if ($ORD !=\'\') {
     $ORDS = \' order by \'.$ORD;
   }
-  
+
+  $PdoArr = array();
   $WHS = \'\';
   $FullRef=\'?ORD=\'.$ORD;
   foreach ( $Fields as $Fld) {
-    $Fltr=addslashes($_REQUEST[\'Fltr_\'.$Fld]);
+    $Fltr=$_REQUEST[\'Fltr_\'.$Fld];
     if ($Fltr!=\'\') {
       if ($WHS !=\'\') {
         $WHS.= \' and \';
       }
       if ($enFields[$Fld]!=\'\') {
-        $WHS.=\'(\'.$Fld." = \'$Fltr\')"; 
+        $WHS.=\'("\'.$Fld."\" = :$Fld)";
+        $PdoArr[$Fld]= $Fltr;
       }
       else {
-        $WHS.= SetFilter2Fld ( $Fld, $Fltr );
+        $WHS.= SetFilter2Fld ( $Fld, $Fltr, $pdo );
       }
       $FullRef.=\'&Fltr_\'.$Fld.\'=\'.$Fltr ;
     }
@@ -689,7 +679,7 @@ $objPHPExcel->getProperties()->setCreator("Vladislav Levitskiy")
              ->setLastModifiedBy($_SESSION[\'login\'])
              ->setTitle("AccPhp '.$TabName.'")
              ->setSubject("'.$TabName.'")
-             ->setDescription("Legrand Russia")
+             ->setDescription("VDL PHP+PDO+PostgreSQL")
              ->setKeywords("AccPhp;'.$TabName.'")
              ->setCategory("AccPhp;'.$TabName.'");
   
@@ -715,20 +705,21 @@ $row=1;
 $col=1;   
 
 
-$aSheet->setCellValueByColumnAndRow($col, $row, GetStr($pdo, \''.$TabName.'\').
+$aSheet->setCellValue([$col, $row], GetStr($pdo, \''.$TabName.'\').
       \' \'.  GetStr($pdo, \'List\'));
   
 $row++;
-$aSheet->setCellValueByColumnAndRow($col, $row, GetStr($pdo, \'Created\').
+$aSheet->setCellValue([$col, $row], GetStr($pdo, \'Created\').
       ": {$_SESSION[\'login\']} ". date("Y-m-d H:i:s"));
 
 
-$query = "select * ".
-       "FROM '.$TabName.' ".
-       " $WHS $ORDS";
+$query = "select * FROM \"'.$TabName.'\" ".
+         "$WHS $ORDS";
 
-$sql2 = $pdo->query ($query)
-               or die("Invalid query:<br>$query<br>" . $pdo->error);
+try {
+    $STH = $pdo->prepare($query);
+    $STH->execute($PdoArr);
+
 ';
 
 fwrite($file,$S);
@@ -742,7 +733,7 @@ $col=1;
 $FL=$row;
 
 foreach ( $Fields as $Fld) {
-  $aSheet->setCellValueByColumnAndRow($col, $row, GetStr($pdo, $Fld));
+  $aSheet->setCellValue([$col, $row], GetStr($pdo, $Fld));
   $col++; 
 }
 
@@ -750,7 +741,7 @@ $n=0;
 $Cnt=0;
 $row++;
 
-while ($dp = $sql2->fetch_assoc()) {
+while ($dp = $STH->fetch(PDO::FETCH_ASSOC)) {
   $col=1;
 ';
 
@@ -760,17 +751,15 @@ foreach ($Fields as $Fld=>$Arr) {
       '  $Fld=\''.$Fld.'\';'."\r\n";
   
   if ($enArr[$Fld]!=''){
-    $S.='  $aSheet->setCellValueByColumnAndRow($col, $row, 
-               GetEnum($pdo, \''.
-               $enArr[$Fld].'\', $dp[$Fld]));'."\r\n";
+    $S.='  $aSheet->setCellValue([$col, $row], GetEnum($pdo, \''.$enArr[$Fld].'\', $dp[$Fld]));'."\r\n";
   }
   else 
   if ($DigArr[$Fld]!=0){
-    $S.='  $OW=number_format($dp[$Fld], '.$DigArr[$Fld].', ".", "\'");
-    $aSheet->setCellValueByColumnAndRow($col, $row, $OW);'."\r\n";
+    $S.='  $OW=$dp[$Fld]; //$OW=number_format($dp[$Fld], '.$DigArr[$Fld].', ".", "\'");
+    $aSheet->setCellValue([$col, $row], $OW);'."\r\n";
   }
   else {
-    $S.='  $aSheet->setCellValueByColumnAndRow($col, $row, $dp[$Fld]);'."\r\n";
+    $S.='  $aSheet->setCellValue([$col, $row], $dp[$Fld]);'."\r\n";
   }
   $S.='  $col++;'."\r\n";
 };
@@ -822,7 +811,6 @@ $S='
   $aSheet->getPageSetup()->setFitToWidth(1);
   $aSheet->getPageSetup()->setFitToHeight(10);  
 
-
   $add_str=date(\'-Ymd_His\');
 
 
@@ -830,6 +818,14 @@ $S='
   //                      \'Out XLS\', "Out file $add_str.XLS: $LineNo lines, amount $TotAmount");
 
   $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel , \'Xlsx\');
+
+ }
+  catch (PDOException $e) {
+    echo ("<hr> Line ".__LINE__."<br>");
+    echo ("File ".__FILE__." :<br> $query<br>PDO Arr:");
+    print_r($PdoArr);	
+    die ("<br> Error: ".$e->getMessage());
+  }
 
 
 ';
@@ -971,16 +967,11 @@ fwrite($file,"session_start();\r\n");
 $S= '
 include ("../setup/common_pg.php");
 BeginProc();
-?>
-<html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-<meta http-equiv="Content-Language" content="ru">
-<link rel="stylesheet" type="text/css" href="../style.css">
-<link rel="icon" href="../favicon.ico" type="image/x-icon">
-<title>'.$TabName.' Card</title></head>
-<body>
-<?php
+
+$TabName=\''.$TabName.'\';
+OutHtmlHeader ($TabName." card");
+
+
 // Checklogin1();'."\r\n";
 
 fwrite($file,$S);
@@ -1531,7 +1522,7 @@ fwrite($file,"<?php\r\n");
 fwrite($file,"session_start();\r\n");
 
 $S= '
-include ("../setup/common.php");
+include ("../setup/common_pg.php");
 BeginProc();
 ?>
 <html>
@@ -2007,13 +1998,18 @@ echo ("<br>");
 foreach ($ExtTab as $TabName=> $I) {
 
 $TabNo='';
-$query = "select TabCode  from AdmTabNames ".
-           "where (TabName='$TabName')";
-  
-$sql2 = $pdo->query ($query)
-                 or die("Invalid query:<br>$query<br>" . $pdo->error);
 
-if ($dp2 = $sql2->fetch_assoc()) {
+$PdoArr = array();
+$PdoArr['TabName']= $TabName;
+
+$query = "select \"TabCode\"  from \"AdmTabNames\" ".
+         "where (\"TabName\"=:TabName)";
+  
+$STH = $pdo->prepare($query);
+$STH->execute($PdoArr);
+
+
+if ($dp2 = $STH->fetch(PDO::FETCH_ASSOC)) {
   $TabNo=$dp2['TabCode'];    
 }
 else {
@@ -2022,37 +2018,45 @@ else {
 
 echo ("<br> Build Select for $TabName ($TabNo) ");
 
-$query = "select * from AdmTabFields ".
-         "where (TypeId='$TabNo') order by Ord, ParamNo";
+$PdoArr = array();
+$PdoArr['TabNo']= $TabNo;
+
+$query = "select * from \"AdmTabFields\" ".
+         "where (\"TypeId\"=:TabNo) order by \"Ord\", \"ParamNo\"";
   
-$sql2 = $pdo->query ($query)
-                 or die("Invalid query:<br>$query<br>" . $pdo->error);
+
+$STH = $pdo->prepare($query);
+$STH->execute($PdoArr);
 
 $Fields=array();
 $F2=array();
 
-while ($dp2 = $sql2->fetch_assoc()) {
+while ($dp2 = $STH->fetch(PDO::FETCH_ASSOC)) {
   $Fields[$dp2['ParamName']]=$dp2;    
   $F2[$dp2['ParamNo']]=$dp2['ParamName'];    
 }
 
 //================================================================
-
-$query = "select F.* from AdmTabIndxFlds F ".
-           "where (F.TabCode='$TabNo') and (F.IndxName='PK_$TabName') ".
-           "order by LineNo";
+// AdmTabIndxFlds
+// TabCode, IndxName, LineNo, FldNo, Ord
+// AdmTabIndx
+// TabCode, IndxType, IndxName
+$query = "select F.* from \"AdmTabIndx\" I, \"AdmTabIndxFlds\" F ".
+           "where  (I.\"TabCode\"=:TabNo) and (I.\"TabCode\"=F.\"TabCode\") and ".
+           "(I.\"IndxType\"=10) and (F.\"IndxName\"=I.\"IndxName\") ".
+           "order by F.\"Ord\", F.\"LineNo\"";
   
 //echo ("<br>$query<br>");
 
-$sql2 = $pdo->query ($query)
-                 or die("Invalid query:<br>$query<br>" . $pdo->error);
+$STH = $pdo->prepare($query);
+$STH->execute($PdoArr);
 
 $PKFields=array();
 $Div='';
 $PKList='';
 $LastPK='';
 
-while ($dp2 = $sql2->fetch_assoc()) {
+while ($dp2 = $STH->fetch(PDO::FETCH_ASSOC)) {
   $FldNo = $dp2['FldNo']; 
   $FldName = $F2[$FldNo];
 
@@ -2067,14 +2071,15 @@ while ($dp2 = $sql2->fetch_assoc()) {
 //print_r ($PkFields);
 //echo("<br>");
 
+$PdoArr = array();
+$PdoArr['Tab2Sel']= "[T:$TabName]";
 // Для ссылок на другие таблицы 
-$query = "select * from AdmTab2Tab ".
-         "where (Tab2='[T:$TabName]')";
+$query = "select * from \"AdmTab2Tab\" ".
+         "where (\"Tab2\"=:Tab2Sel)";
   
 //echo ("<br>$query<br>");
-
-$sql2 = $pdo->query ($query)
-                 or die("Invalid query:<br>$query<br>" . $pdo->error);
+$STH = $pdo->prepare($query);
+$STH->execute($PdoArr);
 
 $FOtherTab=array();
 $ExtTab=array();
@@ -2084,7 +2089,7 @@ $ToFlds=array();
 
 $Fld2='';
 
-while ($dp2 = $sql2->fetch_assoc()) {
+while ($dp2 = $STH->fetch(PDO::FETCH_ASSOC)) {
   $FOtherTab[$dp2['Id']]=$dp2;
   
   
@@ -2178,22 +2183,14 @@ fwrite($file,"<?php\r\n");
 fwrite($file,"session_start();\r\n");
 
 $S= '
-include ("../setup/common.php");
+include ("../setup/common_pg.php");
 BeginProc();
-?>
-<html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-<link rel="stylesheet" type="text/css" href="../style.css">
-<meta http-equiv="Content-Language" content="ru">
-<title>'.$TabName.' Select</title></head>
-<body>
-<?php
-'.
-"\r\n";
+
+$TabName=\''.$TabName.'\';
+OutHtmlHeader ($TabName." Select");'."\r\n";
 fwrite($file,$S);
 
-$S= '$TabName=\''.$TabName.'\';
+$S='
 $CurrFile=\'Select'.$TabName.'.php\';
 $Frm=\''.$TabName.'\';'.
 "\r\n";
@@ -2203,15 +2200,19 @@ fwrite($file,$S);
 
 $ShortList='';
 $DivSL='';
-$query = "select *, ParamName FROM AdmViewField V, AdmTabFields F ".
-          " where V.TabNo='$TabNo' and  (ViewNo=1) and (F.ParamNo=V.FieldNo) and ".
-          "(V.TabNo=F.TypeId) order by V.TabNo, Ord  ";
 
-$sql2 = $pdo->query ($query)
-              or die("Invalid query:<br>$query<br>" . $pdo->error);
+$PdoArr = array();
+$PdoArr['TabNo']= $TabNo;
+
+$query = "select V.*, \"ParamName\" FROM \"AdmViewField\" V, \"AdmTabFields\" F ".
+          " where (V.\"TabNo\"=:TabNo) and  (\"ViewNo\"=1) and (F.\"ParamNo\"=V.\"FieldNo\") and ".
+          "(V.\"TabNo\"=F.\"TypeId\") order by V.\"TabNo\", \"Ord\"  ";
+
+$STH = $pdo->prepare($query);
+$STH->execute($PdoArr);
 
 $DD=0;
-while ($dpL = $sql2->fetch_assoc()) {
+while ($dpL = $STH->fetch(PDO::FETCH_ASSOC)) {
   $DD++;
   if ($DD==3) {
     $DD=0;
@@ -2261,13 +2262,13 @@ if ( $ShortList !=''){
 
 $S.=    $enS.");\r\n".
 
-"CheckRight1 (\$pdo, 'ExtProj.Admin');\r\n\r\n ".
-  '$BegPos = addslashes ($_REQUEST[\'BegPos\']);'."\r\n".
+"CheckRight1 (\$pdo, 'Admin');\r\n\r\n ".
+  '$BegPos = $_REQUEST[\'BegPos\']+0;'."\r\n".
   'if ($BegPos==\'\'){'."\r\n".
     '$BegPos=0;'."\r\n".
   '}'."\r\n"."\r\n".
 
-  '$ORD = addslashes ($_REQUEST[\'ORD\']);'."\r\n".
+  '$ORD = $_REQUEST[\'ORD\'];'."\r\n".
   'if ($ORD ==\'1\') {'."\r\n".
     '  $ORD = \''.$PKList.'\';
 }
@@ -2281,16 +2282,25 @@ if ($ORD !=\'\') {
 else {
   $ORDS = \' order by \'.$ORD;
 }
+
+$PdoArr = array();
   
   $WHS = \'\';
   $FullRef=\'?ORD=\'.$ORD;
   foreach ( $Fields as $Fld) {
-    $Fltr=addslashes($_REQUEST[\'Fltr_\'.$Fld]);
+    $Fltr=$_REQUEST[\'Fltr_\'.$Fld];
     if ($Fltr!=\'\') {
       if ($WHS !=\'\') {
         $WHS.= \' and \';
       }
-      $WHS.=\'(\'.$Fld." Like \'%$Fltr%\')"; 
+      
+      if ($enFields[$Fld]!=\'\') {
+        $PdoArr[$Fld]= $Fltr;
+        $WHS.=\'("\'.$Fld."\" = :$Fld)";
+      }
+      else {
+        $WHS.= SetFilter2Fld ($Fld, $Fltr, $PdoArr );
+      }
       $FullRef.=\'&Fltr_\'.$Fld.\'=\'.$Fltr ;
     }
   }
@@ -2298,13 +2308,13 @@ else {
 "\r\n";
 fwrite($file,$S);
 //===============================================================
-$S='$ElId   = addslashes ($_REQUEST[\'ElId\']);
-$SubStr = addslashes ($_REQUEST[\'SubStr\']);
-$SelId = addslashes ($_REQUEST[\'SelId\']);
-$SelId2 = addslashes ($_REQUEST[\'SelId2\']);
-$SelId3 = addslashes ($_REQUEST[\'SelId3\']);
-$SelId4 = addslashes ($_REQUEST[\'SelId4\']);
-$Par2   = addslashes ($_REQUEST[\'Par2\']);
+$S='$ElId   = $_REQUEST[\'ElId\'];
+$SubStr = $_REQUEST[\'SubStr\'];
+$SelId = $_REQUEST[\'SelId\'];
+$SelId2 = $_REQUEST[\'SelId2\'];
+$SelId3 = $_REQUEST[\'SelId3\'];
+$SelId4 = $_REQUEST[\'SelId4\'];
+$Par2   = $_REQUEST[\'Par2\'];
 ';
 fwrite($file,$S);
 
@@ -2365,7 +2375,7 @@ $S.='
     foreach ( $ToFldsConn[$I] as $I1 => $FF1) {
       $S.='  if ($SelId2!="") {
   if ($WHS!="") $WHS=" and ";
-    $WHS.= " ('.$FF1.' = \'$SelId'.$CntFld.'\')"; 
+    $WHS.= " (\"'.$FF1.'\" = \'$SelId'.$CntFld.'\')"; 
   }  
     ';
       $CntFld++;
@@ -2386,19 +2396,17 @@ $S='  $LN = $_SESSION[\'LPP\'];
     $WHS = \' where \'.$WHS;
   };   
 
-  $query = "select * ".
-         "FROM '.$TabName.' ".
-         " $WHS $ORDS LIMIT $BegPos, $LN";
+  $query = "select * FROM \"'.$TabName.'\" ".
+           "$WHS $ORDS LIMIT $LN offset $BegPos";
 
-  $queryCNT = "select COUNT(*) CNT ".
-         "FROM '.$TabName.' ".
-         " $WHS ";
+  $queryCNT = "select COUNT(*) \"CNT\" FROM \"'.$TabName.'\" ".
+              "$WHS ";
 
-  $sql2 = $pdo->query ($queryCNT)
-                 or die("Invalid query:<br>$query<br>" . $pdo->error);
-
+  $STH = $pdo->prepare($queryCNT);
+  $STH->execute($PdoArr);
+  
   $CntLines=0;
-  if ($dp = $sql2->fetch_assoc()) {
+  if ($dp = $STH->fetch(PDO::FETCH_ASSOC)) {
     $CntLines=$dp[\'CNT\'];  
   };
   $CurrPage= round($BegPos/$LN)+1;
@@ -2408,10 +2416,10 @@ $S='  $LN = $_SESSION[\'LPP\'];
         GetStr($pdo, \'List\').
         \'</b> \'.$CntLines.\' total lines Page <b>\'.
         $CurrPage.\'</b> from \'. $LastPage) ;
-  $sql2 = $pdo->query ($query)
-                 or die("Invalid query:<br>$query<br>" . $pdo->error);
-
- 
+  
+  $STH = $pdo->prepare($query);
+  $STH->execute($PdoArr);
+   
   echo (\'<form method=post action="\'.$CurrFile.\'"><table><tr>\'.
         "<input type=hidden name=\'ElId\' value=\'$ElId\'>".
         "<input type=hidden name=\'SubStr\' value=\'$SubStr\'>".
@@ -2460,7 +2468,7 @@ foreach ( $Fields as $Fld) {
 echo("</tr>");
 
 $n=0;
-while ($dp = $sql2->fetch_assoc()) {
+while ($dp = $STH->fetch(PDO::FETCH_ASSOC)) {
   
   $classtype="";
   $n++;

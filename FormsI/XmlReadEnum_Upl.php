@@ -131,7 +131,7 @@ $UpdCnt=0;
 
 $Len = mb_strlen ($data);
 $StartPos=0;
-
+$LastEnum='';
 while ($StartPos<$Len) {
   $Pos = mb_strpos ($data, '<Enum>', $StartPos);
   if ($Pos!== false) {
@@ -149,6 +149,7 @@ while ($StartPos<$Len) {
       if ($EnumName=='') {
         die ("<br> Error: Bad EnumName=$EnumName. Pos=$Pos\r\n<br>$NewTxt "); 
       }
+      $LastEnum=$EnumName;
 
       $Fld='EnumDescription';
       $Arr[$Fld]=trim(GetXMLVal ($NewTxt, $Fld));
@@ -165,8 +166,14 @@ while ($StartPos<$Len) {
       UpdateTable ($pdo, 'EnumDescription', $EDArr, $Arr, $PK_EDArr);    
       
       foreach ($ValsArr as $Indx=> $V1) {
-        UpdateTable ($pdo, 'EnumValues', $FldsArr, $V1, $PK_Vals);    
+        $Res=UpdateTable ($pdo, 'EnumValues', $FldsArr, $V1, $PK_Vals);    
           //print_r($Arr);
+        if ($Res=='U') {
+          $UpdCnt++;
+        }
+        if ($Res=='I') {
+          $InsCnt++;
+        }
       }
     }
     else {
@@ -178,7 +185,9 @@ while ($StartPos<$Len) {
   }     
 }
 
-echo ("<br> Items: $InsCnt inserted, $UpdCnt updated<br>");
+echo ("<br> Enums: $InsCnt inserted, $UpdCnt updated<br>");
+
+echo ("<a href='../FormsI/EnumFrm.php?Enum=$LastEnum'>$LastEnum ... </a>");
 
 
 };
