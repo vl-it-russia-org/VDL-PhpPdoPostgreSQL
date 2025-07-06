@@ -2397,7 +2397,7 @@ $S='  $LN = $_SESSION[\'LPP\'];
   };   
 
   $query = "select * FROM \"'.$TabName.'\" ".
-           "$WHS $ORDS LIMIT $LN offset $BegPos";
+           "$WHS $ORDS ".AddLimitPos($BegPos, $LN);
 
   $queryCNT = "select COUNT(*) \"CNT\" FROM \"'.$TabName.'\" ".
               "$WHS ";

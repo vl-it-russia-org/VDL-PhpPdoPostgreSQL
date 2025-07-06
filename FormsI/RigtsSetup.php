@@ -425,7 +425,38 @@ if ($CurrPage< $LastPage) {
 echo ('<td><a href="RigtsSetup.php'.$FullRef.'&BegPos='.$LastPage1.'"> Last Page '.$LastPage.'>> </a></td>'.
        "<td><a href='../General/RespPersonsList.php'>Resp. persons</a></td>".
        '</tr></table>');
+//------------------------------------------------------------------------------
+// копирование прав
 
+echo ("<script>
+      function SelectFldUM(Id) {
+        WN='UserSelect.php';
+        SType='".GetStr($pdo, 'Select').' '.
+            GetStr($pdo, 'User')."';
+        ResId='&ResId='+Id;
+        SubVal = document.getElementById(Id).value;
+        a=window.open(WN+'?SubStr='+SubVal+ResId, SType,
+              'width=650,height=620,resizable=yes,scrollbars=yes');
+        return false;
+      }
+      </script>");
+
+
+
+echo ('<form method=post action="RightsUser2UserCopy.php">'.
+    '<table><tr class="header">'.
+     '<td>Copy from: </td>'.
+    '<td><input type="text" size=15 length=50 name=FromUser id="FromUser"> '.
+    '<button onclick="return SelectFldUM(\'FromUser\');">...</button></td> '. 
+    '<td><input type="submit" value=" >> Copy to >> "> </td> '.
+    '<td><input type="text" size=15 length=50 name=ToUser id="ToUser"> '.
+    '<button onclick="return SelectFldUM(\'ToUser\');">...</button></td> '. 
+    '</tr><tr><td colspan=2 align=right>Replace E-Mail:</td>'.
+    '<td><input type=checkbox name=ReplaceEmail value=1></td></tr></table>');
+
+
+
+//==============================================================================
 echo ("<br>$RSel<br>");
 ?>
 </body>

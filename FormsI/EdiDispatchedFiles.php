@@ -24,7 +24,8 @@ if ($Company=='LVL') {
 
 
 echo ('<html><head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<link rel="stylesheet" type="text/css" href="style.css">'.
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="icon" href="../Img/FoldersIcon.ico" type="image/x-icon">'.
 '<title>FileStruct</title></head>
 <body>');
 

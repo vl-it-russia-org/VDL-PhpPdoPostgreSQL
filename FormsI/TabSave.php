@@ -6,7 +6,7 @@ include ("../setup/common_pg.php");
 
 CheckLogin1();
 
-CheckRight1 ($pdo, 'RIGHT_EDIT');
+CheckRight1 ($pdo, 'Admin');
 
 
 ?>
@@ -39,7 +39,7 @@ if ($New !='1' ) {
   }
 
   if ( $OldTabNo != $TabNo) {
-    // Изменение кода таблицы
+    // РР·РјРµРЅРµРЅРёРµ РєРѕРґР° С‚Р°Р±Р»РёС†С‹
     
     $PdoArr['TabNo']= $TabNo;
     

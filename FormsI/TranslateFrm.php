@@ -9,8 +9,8 @@ BeginProc();
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <meta http-equiv="Content-Language" content="ru">
 <link rel="stylesheet" type="text/css" href="style.css">
-<link rel="icon" href="../favicon.ico" type="image/x-icon">
-<title>Translate</title></head>
+<link rel="icon" href="../Img/TranslateStr.ico" type="image/x-icon">
+<title>Translate string</title></head>
 <body>
 <?php
 include '../Translate.js';

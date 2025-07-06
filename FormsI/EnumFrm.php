@@ -3,12 +3,14 @@ session_start();
 
 include ("../setup/common_pg.php");
 
+
 ?>
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <meta http-equiv="Content-Language" content="ru">
 <link rel="stylesheet" type="text/css" href="style.css">
+<link rel="icon" href="../Img/TranslateEnum.ico" type="image/x-icon">
 <title>Enum values</title></head>
 <body>
 <?php

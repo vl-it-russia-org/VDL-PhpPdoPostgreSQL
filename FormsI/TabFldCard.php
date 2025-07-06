@@ -163,13 +163,18 @@ echo ("</td><td>");
 
 //=============================================================================
 if ($VDL_TabFld!= '') {
- /*
+  $PdoArr = array();
+  $PdoArr['VDL_TabName']= $VDL_TabName;
+  $PdoArr['VDL_TabFld']= $VDL_TabFld;
+ 
   echo("<hr><h4>".GetStr($pdo, 'AdmFieldsAddFunc')."</h4>");
-  $query = "select * FROM AdmFieldsAddFunc ". 
-           "where (TabName='$VDL_TabName') and ".
-                 "(FldName='$VDL_TabFld') order by Id ";
-  $sql2 = $pdo->query ($query)
-            or die("Invalid query:<br>$query<br>" . $pdo->error);
+  $query = "select * FROM \"AdmFieldsAddFunc\" ". 
+           "where (\"TabName\"=:VDL_TabName) and ".
+                 "(\"FldName\"=:VDL_TabFld) order by \"Id\" ";
+  
+  
+  $STH = $pdo->prepare($query);
+  $STH->execute($PdoArr);
 
   echo('<table><tr class=header>');
   echo('<th>'.GetStr($pdo, 'Id').'</th>');
@@ -177,7 +182,7 @@ if ($VDL_TabFld!= '') {
   echo('<th></th>');
 
   $i=0;
-  while ($dpL = $sql2->fetch_assoc()) {
+  while ($dpL = $STH->fetch(PDO::FETCH_ASSOC)) {
     $i=NewLine($i);
 
     echo ("<td><a href='AdmFieldsAddFuncCard.php?Id={$dpL['Id']}'>{$dpL['Id']}</a></td>");
@@ -188,7 +193,7 @@ if ($VDL_TabFld!= '') {
   }
   echo("</tr></table>");
   echo("<a href='AdmFieldsAddFuncCard.php?New=1&TabName=$VDL_TabName&FldName=$VDL_TabFld'>".GetStr($pdo, "Add")."</a>");
-  */
+  
 }
 
 echo ("</td></tr></table>");

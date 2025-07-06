@@ -205,7 +205,7 @@ $S.="\r\n".
 //===============================================================================
 // Have master table
 
-$MasterTab = GetMasterTabName($TabName);
+$MasterTab = GetMasterTabName($pdo, $TabName);
 $MasterFldsCorr = array();                      
 if ( $MasterTab != '') {
   $Param = GetParam_TabAddFunc($pdo, $TabName, 20);

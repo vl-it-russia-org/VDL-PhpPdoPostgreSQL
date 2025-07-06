@@ -13,12 +13,7 @@ $Fields=array('Code2','Code3','DigCode'
 $enFields= array();
 CheckRight1 ($pdo, 'Admin');
 
- $BegPos = addslashes ($_REQUEST['BegPos']);
-if ($BegPos==''){
-$BegPos=0;
-}
-
-$ORD = addslashes ($_REQUEST['ORD']);
+ $ORD = $_REQUEST['ORD'];
 if ($ORD =='1') {
 $ORD = '"Code2"';
   }
@@ -30,20 +25,22 @@ $ORD = '"Code2"';
   if ($ORD !='') {
     $ORDS = ' order by '.$ORD;
   }
-  
+
+  $PdoArr = array();
   $WHS = '';
   $FullRef='?ORD='.$ORD;
   foreach ( $Fields as $Fld) {
-    $Fltr=addslashes($_REQUEST['Fltr_'.$Fld]);
+    $Fltr=$_REQUEST['Fltr_'.$Fld];
     if ($Fltr!='') {
       if ($WHS !='') {
         $WHS.= ' and ';
       }
       if ($enFields[$Fld]!='') {
-        $WHS.='('.$Fld." = '$Fltr')"; 
+        $WHS.='("'.$Fld."\" = :$Fld)";
+        $PdoArr[$Fld]= $Fltr;
       }
       else {
-        $WHS.= SetFilter2Fld ( $Fld, $Fltr );
+        $WHS.= SetFilter2Fld ( $Fld, $Fltr, $pdo );
       }
       $FullRef.='&Fltr_'.$Fld.'='.$Fltr ;
     }
@@ -58,7 +55,7 @@ $objPHPExcel->getProperties()->setCreator("Vladislav Levitskiy")
              ->setLastModifiedBy($_SESSION['login'])
              ->setTitle("AccPhp Countries")
              ->setSubject("Countries")
-             ->setDescription("Legrand Russia")
+             ->setDescription("VDL PHP+PDO+PostgreSQL")
              ->setKeywords("AccPhp;Countries")
              ->setCategory("AccPhp;Countries");
   
@@ -80,20 +77,21 @@ $row=1;
 $col=1;   
 
 
-$aSheet->setCellValueByColumnAndRow($col, $row, GetStr($pdo, 'Countries').
+$aSheet->setCellValue([$col, $row], GetStr($pdo, 'Countries').
       ' '.  GetStr($pdo, 'List'));
   
 $row++;
-$aSheet->setCellValueByColumnAndRow($col, $row, GetStr($pdo, 'Created').
+$aSheet->setCellValue([$col, $row], GetStr($pdo, 'Created').
       ": {$_SESSION['login']} ". date("Y-m-d H:i:s"));
 
 
-$query = "select * ".
-       "FROM Countries ".
-       " $WHS $ORDS";
+$query = "select * FROM \"Countries\" ".
+         "$WHS $ORDS";
 
-$sql2 = $pdo->query ($query)
-               or die("Invalid query:<br>$query<br>" . $pdo->error);
+try {
+    $STH = $pdo->prepare($query);
+    $STH->execute($PdoArr);
+
 
 
 $row++;
@@ -102,7 +100,7 @@ $col=1;
 $FL=$row;
 
 foreach ( $Fields as $Fld) {
-  $aSheet->setCellValueByColumnAndRow($col, $row, GetStr($pdo, $Fld));
+  $aSheet->setCellValue([$col, $row], GetStr($pdo, $Fld));
   $col++; 
 }
 
@@ -110,23 +108,23 @@ $n=0;
 $Cnt=0;
 $row++;
 
-while ($dp = $sql2->fetch_assoc()) {
+while ($dp = $STH->fetch(PDO::FETCH_ASSOC)) {
   $col=1;
 
   $Fld='Code2';
-  $aSheet->setCellValueByColumnAndRow($col, $row, $dp[$Fld]);
+  $aSheet->setCellValue([$col, $row], $dp[$Fld]);
   $col++;
 
   $Fld='Code3';
-  $aSheet->setCellValueByColumnAndRow($col, $row, $dp[$Fld]);
+  $aSheet->setCellValue([$col, $row], $dp[$Fld]);
   $col++;
 
   $Fld='DigCode';
-  $aSheet->setCellValueByColumnAndRow($col, $row, $dp[$Fld]);
+  $aSheet->setCellValue([$col, $row], $dp[$Fld]);
   $col++;
 
   $Fld='CountryName';
-  $aSheet->setCellValueByColumnAndRow($col, $row, $dp[$Fld]);
+  $aSheet->setCellValue([$col, $row], $dp[$Fld]);
   $col++;
   $row++;
 }
@@ -171,7 +169,6 @@ while ($dp = $sql2->fetch_assoc()) {
   $aSheet->getPageSetup()->setFitToWidth(1);
   $aSheet->getPageSetup()->setFitToHeight(10);  
 
-
   $add_str=date('-Ymd_His');
 
 
@@ -179,6 +176,14 @@ while ($dp = $sql2->fetch_assoc()) {
   //                      'Out XLS', "Out file $add_str.XLS: $LineNo lines, amount $TotAmount");
 
   $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel , 'Xlsx');
+
+ }
+  catch (PDOException $e) {
+    echo ("<hr> Line ".__LINE__."<br>");
+    echo ("File ".__FILE__." :<br> $query<br>PDO Arr:");
+    print_r($PdoArr);	
+    die ("<br> Error: ".$e->getMessage());
+  }
 
 
 

@@ -35,6 +35,10 @@ if ($size> (1024*1024) ) {
     $sizeStr = $size.'b';
 };
 
+if ($size==0) {
+  die ("<br> Error: file size = 0");
+}
+
 echo ("File: $real_name $sizeStr<br>");
 
 
@@ -74,16 +78,20 @@ $Run=0;
 foreach($lines as $line) {
   $count++;
 
-  echo "<br>".str_pad($count, 3, 0, STR_PAD_LEFT).". ".$line;
-  if ($line=='') {
+  echo "<br>".str_pad($count, 5, 0, STR_PAD_LEFT).": ".$line;
+  $TL = trim ($line);
+
+  if ($TL=='') {
     if ($Sql!= '') {
       $Run++;
-      echo ("<br> Run sql:  $Run");
+      echo ("<br><hr><br> Run sql:  $Run");
       
       try {
       $query = $Sql;
       $STH = $pdo->prepare($query);
       $STH->execute();
+      
+      
       }
       catch (PDOException $e) {
         echo ("<hr> Line ".__LINE__."<br>");

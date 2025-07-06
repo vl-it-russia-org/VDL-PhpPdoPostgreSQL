@@ -38,6 +38,53 @@ function GetEditableFld($ParamTxt) {
 
 
 //=================================================================
+//=================================================================
+function GetMasterTabName(&$pdo, $TabName) {
+  
+  $MasterTabName='';
+  // AdmTabsAddFunc
+  // Id, TabName, AddFunc, Param
+
+
+  $PdoArr = array();
+  $PdoArr['TabName']= $TabName;
+  
+  try {
+  $query = "select * from \"AdmTabsAddFunc\" F ". 
+           "where (F.\"TabName\" = :TabName) and (F.\"AddFunc\"=10) "; 
+
+  $STH = $pdo->prepare($query);
+  $STH->execute($PdoArr);
+
+  
+  
+  if ($dp2 = $STH->fetch(PDO::FETCH_ASSOC)) {
+    $Param = $dp2['Param'];
+    $i=strpos($Param, '[MasterTab=');
+    
+    if ($i!==false) {
+      $last=strpos ($Param, ']', $i);  
+      if ($last !== false) {
+        $MasterTabName = trim (substr($Param, $i+11, $last -$i-11));
+
+      }
+    
+    }
+
+
+  }
+
+}
+  catch (PDOException $e) {
+    echo ("<hr> Line ".__LINE__."<br>");
+    echo ("File ".__FILE__." :<br> $query<br>PDO Arr:");
+    print_r($PdoArr);	
+    die ("<br> Error: ".$e->getMessage());
+  }  
+  return $MasterTabName;
+}
+//=================================================================
+/*
 
 function GetMasterTabName($ParamTxt) {
   
@@ -57,7 +104,7 @@ function GetMasterTabName($ParamTxt) {
 }
 
 
-
+*/
 //=================================================================
 
 

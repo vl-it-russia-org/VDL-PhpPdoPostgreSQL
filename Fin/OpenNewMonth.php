@@ -1,12 +1,10 @@
 <?php
 session_start();
-
-include ("../setup/common_pg.php");
+include ("../setup/common.php");
 include ("../AnSum/AnSum.php");
-
 BeginProc();
 CheckLogin1 ();
-CheckRight1 ($pdo, 'Admin');
+CheckRight1 ($mysqli, 'ExtProj.Admin');
 
 // 1030.05.30
 // Учет на месяц открывается выполнением функции 
@@ -19,7 +17,7 @@ if ($Year==''){ die ("<br> Error:  Empty Year");}
 if ($Year<'2020'){ die ("<br> Error:  Year 2020 and more");}
 if ($Year>'2030'){ die ("<br> Error:  Year 2030 and less");}
 
-$Mon=$_REQUEST['Month'];
+$Mon=addslashes($_REQUEST['Month']);
 if ($Mon==''){ die ("<br> Error:  Empty Month");}
 
 $BegDate = "$Year-$Mon-01";
@@ -33,8 +31,8 @@ $PredBegDate = '0000-00-00';
 $query = "select * from Periods ". 
         "where (PeriodType = 15)and(BegDate='$BegDate')"; 
 
-$sql2 = $pdo->query ($query) 
-          or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+$sql2 = $mysqli->query ($query) 
+          or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
 if ($dp2 = $sql2->fetch_assoc()) {
   $PeriodId= $dp2['Id'];
   
@@ -50,8 +48,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
   $query = "select * from Periods ". 
            "where (PeriodType = 15)and(BegDate<'$BegDate') order by BegDate desc limit 0, 1"; 
 
-  $sql21 = $pdo->query ($query) 
-            or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+  $sql21 = $mysqli->query ($query) 
+            or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
 
   if ($dp21 = $sql21->fetch_assoc()) {
     $PredPeriod=$dp21['Id'];
@@ -71,8 +69,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
   $query = "select * from AccountChart ". 
            "where (HaveChild = 0) order by PlanNo, IsBalance, AccountNo"; 
 
-  $sql21 = $pdo->query ($query) 
-            or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+  $sql21 = $mysqli->query ($query) 
+            or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
   while ($dp21 = $sql21->fetch_assoc()) {
     $PlanNo= $dp21['PlanNo'];
     $AccNo = $dp21['AccountNo']; 
@@ -95,8 +93,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
                "where (OpDate = '$PredBegDate') and ".
                "(PlanNo='$PlanNo')and(AccountNo='$AccNo')"; 
 
-      $sql25 = $pdo->query ($query) 
-                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+      $sql25 = $mysqli->query ($query) 
+                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
       if ($dp25 = $sql25->fetch_assoc()) {
         $DtSum=$dp25['AmountDt'];
         $CtSum=$dp25['AmountCt'];
@@ -110,8 +108,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
     $query = "select * from FinAccRems ". 
              "where (OpDate='$BegDate') and (PlanNo='$PlanNo') and (AccountNo = '$AccNo') "; 
 
-    $sql23 = $pdo->query ($query) 
-              or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+    $sql23 = $mysqli->query ($query) 
+              or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
     if ($dp23 = $sql23->fetch_assoc()) {
       echo ( "<br> -- Error: $AccNo Rems $BegDate already exists"); 
     }
@@ -119,8 +117,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
       $query = "insert into FinAccRems(OpDate,PlanNo,AccountNo,IsBalance,AmountDt,AmountCt)". 
                "values('$BegDate','$PlanNo','$AccNo','$IsBalance', '$DtSum', '$CtSum')"; 
 
-      $sql27 = $pdo->query ($query) 
-                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+      $sql27 = $mysqli->query ($query) 
+                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
     }
     
     // Добавить копирование АНАЛИТИЧЕСКИХ Остатков!
@@ -130,8 +128,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
     $query = "select * from AccChartAnalitic ". 
              "where (AccId = $AccId) order by Ord1"; 
 
-    $sql23 = $pdo->query ($query) 
-              or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+    $sql23 = $mysqli->query ($query) 
+              or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
     while ($dp23 = $sql23->fetch_assoc()) {
       $AnaliticName= $dp23['AnaliticName'];
       $PredSum=0;
@@ -142,8 +140,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
                "where (OpDate='$PredBegDate') and (AccId=$AccId) and ".
                "(AnaliticName='$AnaliticName')"; 
 
-      $sql26 = $pdo->query ($query) 
-                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+      $sql26 = $mysqli->query ($query) 
+                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
       if ($dp26 = $sql26->fetch_assoc()) {
         $PredSum=$dp26['AnId'];
       }
@@ -152,8 +150,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
                "where (OpDate='$BegDate') and (AccId=$AccId) and ".
                "(AnaliticName='$AnaliticName')"; 
 
-      $sql26 = $pdo->query ($query) 
-                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+      $sql26 = $mysqli->query ($query) 
+                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
 
 
       if ($dp26 = $sql26->fetch_assoc()) {
@@ -161,12 +159,12 @@ if ($dp2 = $sql2->fetch_assoc()) {
       }
       else {
 
-        $AnSum = AnaliticSum($pdo, $AnaliticName, -1, $PredSum, 1);
+        $AnSum = AnaliticSum($mysqli, $AnaliticName, -1, $PredSum, 1);
         $query = "insert into FinAccRemsAnalitic (OpDate, AccId, AnaliticName,AnId) ". 
                  "values ('$BegDate', $AccId, '$AnaliticName', $AnSum)"; 
 
-        $sql29 = $pdo->query ($query) 
-                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+        $sql29 = $mysqli->query ($query) 
+                or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
       }
     }
 
@@ -181,8 +179,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
              "where (PeriodId='$PeriodId') and ".
              "(AccNo='$AccNo') and (PlanNo ='$PlanNo')"; 
 
-    $sql23 = $pdo->query ($query) 
-              or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+    $sql23 = $mysqli->query ($query) 
+              or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
     if ($dp23 = $sql23->fetch_assoc()) {
       echo ("<br> -- Error: for period $PeriodId turn aleady exists for $AccNo ");
     }
@@ -194,8 +192,8 @@ if ($dp2 = $sql2->fetch_assoc()) {
                "values ('$PeriodId','$AccNo','$PlanNo', 0, 0)"; 
 
 
-      $sql27 = $pdo->query ($query) 
-                 or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $pdo->error);
+      $sql27 = $mysqli->query ($query) 
+                 or die("Invalid query:<br>$query<br> Line:".__LINE__." ". $mysqli->error);
     }
 
     // Добавить аналитические обороты!
@@ -219,8 +217,8 @@ if ($AnaliticId==''){
     if ($New==1) {  
       $query = "select MAX(AnaliticId) MX FROM AccChartAnalitic ".
                "WHERE (AccId='$AccId')";
-      $sql2 = $pdo->query ($query)
-                     or die("Invalid query:<br>$query<br>" . $pdo->error);
+      $sql2 = $mysqli->query ($query)
+                     or die("Invalid query:<br>$query<br>" . $mysqli->error);
       $MX=0;
       if ($dp = $sql2->fetch_assoc()) {
         $MX=$dp['MX'];
@@ -241,15 +239,15 @@ if ($AnaliticId==''){
   //    $_REQUEST['OpDate']=date('Y-m-d');
   //    $D=$_REQUEST['OpDate'];
   //  }
-  //  $_REQUEST['DocNo'] = GetNextNo ( $pdo, 'BankOp', $D);
+  //  $_REQUEST['DocNo'] = GetNextNo ( $mysqli, 'BankOp', $D);
   //}
 
 
   $dp=array();
   $query = "select * FROM AccChartAnalitic ".
            "WHERE (AccId='$AccId') AND (AnaliticId='$AnaliticId')";
-  $sql2 = $pdo->query ($query)
-                 or die("Invalid query:<br>$query<br>" . $pdo->error);
+  $sql2 = $mysqli->query ($query)
+                 or die("Invalid query:<br>$query<br>" . $mysqli->error);
   
   if ($dp = $sql2->fetch_assoc()) {
     if ($New==1){
@@ -278,8 +276,8 @@ if ($AnaliticId==''){
     }
     $q.=$S1.') values ('.$S2.')';
     
-    $sql2 = $pdo->query ($q)
-                 or die("Invalid query:<br>$q<br>" . $pdo->error);
+    $sql2 = $mysqli->query ($q)
+                 or die("Invalid query:<br>$q<br>" . $mysqli->error);
 }
   else {
     $q='update AccChartAnalitic set ';
@@ -306,8 +304,8 @@ $V=addslashes ($_REQUEST['OldAnaliticId']);
       $S1.=" and (AnaliticId='$V')";
   
       $q.= $S1;
-      $sql2 = $pdo->query ($q)
-                 or die("Invalid query:<br>$q<br>" . $pdo->error);
+      $sql2 = $mysqli->query ($q)
+                 or die("Invalid query:<br>$q<br>" . $mysqli->error);
   
     }
   }

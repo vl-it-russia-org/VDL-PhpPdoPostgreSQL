@@ -108,15 +108,14 @@ try {
       $i=0;
     }     
     $i++;
-    $CN= "Fltr_$Fld";
-    echo("<td align=right><label for=\"$CN\">".GetStr($pdo, $Fld).":</label></td>");
+    echo("<td align=right>".GetStr($pdo, $Fld).":</td>");
 
     if ($enFields[$Fld]!=''){
-      echo("<td>".EnumSelection($pdo, $enFields[$Fld],"$CN ID=$CN", $_REQUEST['Fltr_'.$Fld], 1)."</td>");
+      echo("<td>".EnumSelection($pdo, $enFields[$Fld],'Fltr_'.$Fld, $_REQUEST['Fltr_'.$Fld], 1)."</td>");
     }
     else {
-      echo("<td><input type=text size=12 name='$CN' id='$CN' value='".
-        $_REQUEST[$CN]."'></td>");
+      echo("<td><input type=text length=30 size=20 name='Fltr_$Fld' value='".
+        $_REQUEST['Fltr_'.$Fld]."'></td>");
     }
   }
   echo ('<td><button type="submit">Filter</button></td></tr></table></form>');

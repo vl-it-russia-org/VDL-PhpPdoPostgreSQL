@@ -100,8 +100,8 @@ echo("<hr><h4> Upload Xlsx file for ".GetStr($pdo, 'CurrencyExchRate')."</h4>");
 $FldsIndxArr= array ( 'CurrencyCode'=>-1,  'StartDate'=>-1,  'Multy'=>-1,  'Rate'=>-1, 
            'FullRate'=>-1);
 
-$ColHeader= array ( 'CurrencyCode'=>'Currency code',  'StartDate'=>'Start date',  'Multy'=>'Factor',  'Rate'=>'Rate', 
-           'FullRate'=>'Full rate');
+$ColHeader= array ( 'CurrencyCode'=>'<a href=\'https://kolya.it-russia.org/PG2025/FormsI/TranslateFrm.php?Enum=CurrencyCode\' target=Translate>_</a>CurrencyCode',  'StartDate'=>'<a href=\'https://kolya.it-russia.org/PG2025/FormsI/TranslateFrm.php?Enum=StartDate\' target=Translate>_</a>StartDate',  'Multy'=>'<a href=\'https://kolya.it-russia.org/PG2025/FormsI/TranslateFrm.php?Enum=Multy\' target=Translate>_</a>Multy',  'Rate'=>'<a href=\'https://kolya.it-russia.org/PG2025/FormsI/TranslateFrm.php?Enum=Rate\' target=Translate>_</a>Rate', 
+           'FullRate'=>'<a href=\'https://kolya.it-russia.org/PG2025/FormsI/TranslateFrm.php?Enum=FullRate\' target=Translate>_</a>FullRate');
 
 $sheetData = $objPHPExcel->getActiveSheet()->toArray(null, false, false, false);
 

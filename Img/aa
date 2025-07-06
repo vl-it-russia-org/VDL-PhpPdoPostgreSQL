@@ -1,0 +1,17 @@
+<script>
+function SetPos(PosVal) { 
+  el=document.getElementById('VVPos'); 
+  if ( el) { 
+    el.value=PosVal;
+  };
+};
+
+function AddShop1() {
+  SetPos("PosVal1"); 
+  el=document.getElementById('AddShop'); 
+  if ( el) { 
+    el.value=1;
+  }; 
+  return true; 
+};
+</script>

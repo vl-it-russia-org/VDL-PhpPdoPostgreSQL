@@ -25,11 +25,11 @@ $Frm='Tab';
 $Fields=array('TabCode', 'IndxType', 'IndxName');
 
 
-$TabNo= addslashes ($_REQUEST['TypeId']);
-$IndxName= addslashes ($_REQUEST['IndxName']);
+$TabNo= $_REQUEST['TypeId'];
+$IndxName= $_REQUEST['IndxName'];
 
 if ($TabNo == '') {
-  $TabNo= addslashes ($_REQUEST['TabCode']);
+  $TabNo= $_REQUEST['TabCode'];
 }
 
 $PdoArr = array();
@@ -141,8 +141,7 @@ echo ("<br><hr>");
 
 //SELECT 
 
-$Fld1= array ( 'ParamName', 'DocParamType', 
-              'DocParamsUOM', 'AddParam',  'Index');
+$Fld1= array ( 'ParamName', 'DocParamType', 'AddParam',  'InIndex');
 // FROM 'AdmTabFields' WHERE 1
 
 $query = "select * ".
@@ -169,7 +168,7 @@ foreach ( $Fld1 as $Fld) {
 $i=0;
 
 $enFld   = array ('DocParamsUOM'=>'DocParamsUOM','DocParamType'=>'DocParamType');
-$FldType = array ('Index'=>'bool1');
+$FldType = array ('InIndex'=>'bool1');
 
 
 while ($dp = $STH->fetch(PDO::FETCH_ASSOC)) {
