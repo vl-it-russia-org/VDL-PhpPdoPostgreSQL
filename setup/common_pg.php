@@ -15,17 +15,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING );
 //  error_reporting(E_ERROR | E_PARSE);
 //}
 
-$BaseHost='https://kolya.it-russia.org/PG2025/';
-$Default_Lang='RU';
-
-$db_host = "localhost";
-$db_base = "kolya";
-$TmpFilesDir='/var/var/Files/Kolya';
-
-$SecTxtMsg='-Your secret combination-';
-
-$db_user="kolya";
-$db_pass="-- Pass to DB--";
+require_once 'set#tings.php';
 
 $pdo = null;
 try {
@@ -59,11 +49,24 @@ function Ru2EnTranslit ($TextCyr) {
    
   return (str_replace($cyr, $lat, $TextCyr));
 }
-//=====================================================
-function GetBaseHost() {
-  return  'https://kolya.it-russia.org/PG2025/';
-}
+// ========================================================================
 
+function OutHtmlHeader ($FrmName) {
+$Lang='RU';
+if (!empty($_SESSION['lang'])) {
+  $Lang=$_SESSION['lang'];
+}
+echo ('<!DOCTYPE>
+<html lang="'.$Lang.'">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" type="text/css" href="../style.css">
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<title>'.$FrmName.'</title></head>
+<body>');
+
+}
 
 //-----------------------------------------------------------------------------------
 function BeginProc ($HaveOrd=0, $Chapter='') {  
@@ -1172,6 +1175,12 @@ function ChkOk ( &$mysqli, $HId, $Name ) {
   return $Res;
 }
 //==============================================================
+function AddLimitPos($BegPos, $LPP) {
+  $BP = $BegPos+0;
+  $LPP = $LPP+0;
+  return " LIMIT $LPP OFFSET $BP ";  
+}
+//==============================================================
 function UpdateTable (&$pdo, $TabName, &$FldsArr, &$Arr, $PKArr, $CanUpd=1, $AutoIns='') {
   $StrWhere='';
   $Div='';
@@ -1179,7 +1188,7 @@ function UpdateTable (&$pdo, $TabName, &$FldsArr, &$Arr, $PKArr, $CanUpd=1, $Aut
   echo ("<br> UpdTable: Arr:");
   print_r($Arr);
   echo ("<hr> PkArr:");
-  print_r($PkArr);
+  print_r($PKArr);
   echo ("<hr>");
 
   $Res='';
@@ -1193,21 +1202,37 @@ function UpdateTable (&$pdo, $TabName, &$FldsArr, &$Arr, $PKArr, $CanUpd=1, $Aut
   if ($StrWhere=='') {
     die ("<br> Error: No PK");
   }
-     
+
+  $dp3=array(); 
   $query = "select * FROM \"$TabName\" ".
            "WHERE $StrWhere";
         
+  
+  $InsOnly=0;
   try {
+    
+    if ($AutoIns!='') {
+      if (empty($Arr[$AutoIns])) {
+        $InsOnly=1;
+      }
+    }
+
+    if ($InsOnly==0) {
       $STH = $pdo->prepare($query);
       $STH->execute($PdoArr);
-  
+      if ($dp3 = $STH->fetch(PDO::FETCH_ASSOC)){
+        $InsOnly=0;
+      }
+      else {
+        $InsOnly=1;
+      }
       //echo ("<br> Line ".__LINE__.": $query<br>");
       //        print_r($PdoArr);
       //        echo ("<br>");
   
+    }
   
-  
-  if ($dp3 = $STH->fetch(PDO::FETCH_ASSOC)) {
+  if ($InsOnly==0) {
     if ($CanUpd) {
       $UpdStr='';
       $Div='';
@@ -1235,6 +1260,7 @@ function UpdateTable (&$pdo, $TabName, &$FldsArr, &$Arr, $PKArr, $CanUpd=1, $Aut
     $InsStr1='';
     $InsStr2='';
     $Div='';
+    $PdoArr=array();
     foreach ($FldsArr as $Fld) {
       if ($Fld == $AutoIns) {
         // AutoInsert
